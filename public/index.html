@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a2333">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="文学杀">
+<title>文学杀</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" href="/icon-192.png">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div id="lobby" class="lobby">
+  <h1>文学杀</h1>
+  <p class="sub">两个人，一副牌，各自阅读自己的角色。</p>
+
+  <label class="field">
+    <span>你的名字</span>
+    <input id="name" maxlength="12" placeholder="落个名">
+  </label>
+
+  <div class="lobby-actions">
+    <button id="create" class="btn primary">开一局</button>
+  </div>
+
+  <div class="join-box">
+    <input id="code" maxlength="4" inputmode="numeric" placeholder="房间号">
+    <button id="join" class="btn">进去</button>
+  </div>
+
+  <p id="lobby-msg" class="msg"></p>
+</div>
+
+<main id="table" class="table" hidden>
+  <header class="topbar">
+    <div class="brand">文学杀</div>
+    <div class="room-no">房间 <b id="room-code">----</b></div>
+    <div class="turn-info">
+      <span id="turn-label">—</span>
+      <span class="dot">·</span>
+      第 <b id="round">1</b> 轮
+    </div>
+    <div class="ap-info">
+      行动值 <b id="ap">0</b>
+      <span id="credits" class="credits"></span>
+    </div>
+    <button id="end-turn" class="btn small">结束回合</button>
+    <button id="resign" class="btn small ghost">认输</button>
+  </header>
+
+  <div id="hint" class="hint"></div>
+
+  <section class="side foe">
+    <div class="side-head">
+      <span id="foe-name">对手</span>
+      <span id="foe-hand" class="handcount"></span>
+    </div>
+    <div id="foe-field" class="field-row"></div>
+  </section>
+
+  <section class="middle">
+    <div id="pending-slot" class="pending-slot"></div>
+  </section>
+
+  <section class="side mine">
+    <div class="side-head">
+      <span id="my-name">我</span>
+      <span id="my-ap" class="handcount"></span>
+    </div>
+    <div id="my-field" class="field-row"></div>
+  </section>
+
+  <section class="hand-area">
+    <div class="hand-head">手牌</div>
+    <div id="hand" class="hand-row"></div>
+  </section>
+
+  <aside class="logbox">
+    <div class="log-head">这一局</div>
+    <ul id="log"></ul>
+  </aside>
+
+  <div id="toast" class="toast" hidden></div>
+  <div id="event" class="event" hidden></div>
+
+  <div id="detail" class="detail" hidden></div>
+
+  <div id="over" class="over" hidden></div>
+</main>
+
+<script src="/app.js"></script>
+<script>
+  // 装成 app：注册 service worker，外壳缓存起来，断网也能打开
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    })
+  }
+</script>
+</body>
+</html>
