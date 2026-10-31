@@ -1,0 +1,17 @@
+{
+  "name": "literature-kill",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "文学杀 · 网页联机桌游",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  }
+}
