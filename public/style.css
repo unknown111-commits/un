@@ -793,3 +793,79 @@ body::before {
   letter-spacing: 0.22em;
   font-size: 12px;
 }
+
+/* ── 海、沙滩、阳光、信 ── */
+
+/* 整张桌子就是一片海：上边雾，中间海平线，下边沙滩，右上角挂着太阳 */
+body {
+  background:
+    /* 阳光：右上角的光晕 */
+    radial-gradient(48% 38% at 84% 6%, rgba(255, 240, 205, 0.75) 0%, rgba(255, 244, 220, 0.28) 42%, transparent 72%),
+    /* 太阳本体 */
+    radial-gradient(7% 7% at 84% 9%, rgba(255, 250, 236, 0.95) 0%, rgba(255, 248, 228, 0.5) 55%, transparent 100%),
+    /* 沙滩 */
+    linear-gradient(180deg, transparent 0 66%, #efe4cf 66%, #e8d9bd 84%, #e0cfae 100%),
+    /* 海 */
+    linear-gradient(180deg, #e6ecec 0%, #d3e0e2 34%, #bfd2d7 56%, #aec4cb 66%),
+    #c9d6d9;
+  background-attachment: fixed;
+}
+
+/* 海平线：一条极淡的横线，夕阳斜照的那道亮边 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    /* 海平线 */
+    linear-gradient(180deg, transparent calc(66% - 1px), rgba(255, 250, 235, 0.85) calc(66% - 1px), rgba(255, 250, 235, 0.85) 66%, transparent 66%),
+    /* 海面的波光：一条条细碎的横纹 */
+    repeating-linear-gradient(180deg, transparent 0 13px, rgba(255, 252, 240, 0.42) 13px 14px, transparent 14px 46px),
+    /* 沙滩上的浪痕 */
+    repeating-linear-gradient(174deg, transparent 0 60px, rgba(200, 180, 148, 0.16) 60px 61px, transparent 61px 130px);
+  background-size: 100% 100%, 100% 34%, 100% 34%;
+  background-position: 0 0, 0 68%, 0 72%;
+  background-repeat: no-repeat;
+  z-index: -2;
+}
+
+/* 浪：底部几道细弧 */
+body::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34vh;
+  pointer-events: none;
+  background-image:
+    radial-gradient(120% 40% at 50% 108%, transparent 62%, rgba(255, 253, 245, 0.5) 63%, transparent 64%),
+    radial-gradient(90% 30% at 22% 112%, transparent 60%, rgba(255, 253, 245, 0.42) 61%, transparent 62%),
+    radial-gradient(90% 30% at 78% 114%, transparent 60%, rgba(255, 253, 245, 0.38) 61%, transparent 62%);
+  z-index: -1;
+}
+
+/* 信：手牌右上角折一个角 */
+.handcard { position: relative; }
+.handcard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 16px 16px 0;
+  border-color: transparent rgba(36, 51, 58, 0.07) transparent transparent;
+  pointer-events: none;
+}
+
+/* 大厅那块也压在海面上：一张浮着的信纸 */
+.lobby {
+  background: rgba(247, 244, 236, 0.78);
+  border: 1px solid rgba(36, 51, 58, 0.14);
+  border-radius: 2px;
+  box-shadow: 0 18px 50px rgba(36, 51, 58, 0.12);
+  backdrop-filter: blur(3px);
+}
