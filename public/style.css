@@ -466,3 +466,124 @@ body {
   border-radius: 5px;
 }
 .detail-head { border-bottom: 1px solid var(--gold-soft); }
+
+/* 大厅底下那两个链接 */
+.lobby-links {
+  margin-top: 18px;
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  font-size: 13px;
+  opacity: 0.7;
+}
+.lobby-links a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+}
+
+/* ── 卡面再雕一遍（2026-11-01 下午） ── */
+
+/* 角色卡：级别色带，一眼看出这个人几级 */
+.card { position: relative; }
+.card.lv3::before,
+.card.lv4::before,
+.card.lv5::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 14px 0 0 14px;
+}
+.card.lv3::before { background: #a67c52; }
+.card.lv4::before { background: #8e9aaf; }
+.card.lv5::before { background: #c9a227; }
+
+/* 名字再重一点，星级跟上 */
+.card .cname {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 15px;
+}
+.card .star {
+  color: #b8860b;
+  letter-spacing: 2px;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+/* 血条底衬一点暗，数字更清 */
+.card .cstats b { font-size: 15px; }
+.card .hpbar { height: 7px; border-radius: 4px; }
+
+/* 状态小片 */
+.chip {
+  display: inline-block;
+  padding: 1px 7px;
+  margin: 2px 4px 2px 0;
+  border-radius: 9px;
+  font-size: 11px;
+  background: rgba(26, 35, 51, 0.08);
+  border: 1px solid rgba(26, 35, 51, 0.14);
+}
+
+/* 手牌：食物暖底色，书冷底色 */
+.handcard.food {
+  background: linear-gradient(170deg, #fff8ec 0%, #f7e9d2 100%);
+  border-color: #dcc49b;
+}
+.handcard.book {
+  background: linear-gradient(170deg, #f2f6fa 0%, #e2ebf3 100%);
+  border-color: #b9cad9;
+}
+.handcard .hname {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.handcard .htype {
+  font-size: 10px;
+  opacity: 0.55;
+  margin: 2px 0 4px;
+}
+.handcard .hnote {
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0.75;
+}
+.handcard.held {
+  outline: 2px solid #b03a3a;
+  outline-offset: 2px;
+  transform: translateY(-8px);
+}
+
+/* 两种适性分色：现实蓝、超现实紫 */
+.cstats .shield {
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.cstats .shield.real {
+  color: #1f5f8b;
+  background: rgba(31, 95, 139, 0.12);
+  border: 1px solid rgba(31, 95, 139, 0.3);
+}
+.cstats .shield.surreal {
+  color: #6b3fa0;
+  background: rgba(107, 63, 160, 0.12);
+  border: 1px solid rgba(107, 63, 160, 0.3);
+}
+
+/* 鳄鱼街把技能吞掉：整块桌面褪成紫色，提醒这一手被封了 */
+#table.drained {
+  animation: drainedPulse 0.9s ease-out;
+}
+@keyframes drainedPulse {
+  0% { filter: none; }
+  30% { filter: hue-rotate(-40deg) saturate(1.6) brightness(0.92); }
+  100% { filter: none; }
+}
