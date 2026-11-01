@@ -19,6 +19,7 @@ const MIME = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.md': 'text/plain; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -55,6 +56,40 @@ const server = http.createServer(async (req, res) => {
 
 const wss = new WebSocketServer({ server })
 const rooms = new Map()
+const waiting = [] // 随机匹配的队列
+
+/** 离线模式的对手：抽牌、打最虚的、有招就放，然后交回合 */
+function maybeAi(room) {
+  if (!room?.vsAi || !room.state || room.state.phase !== 'playing') return
+  if (room.state.turnSeat !== 1) return
+  const s = room.state
+  try {
+    if (s.pending && !s.pending.hidden) {
+      applyAction(s, 1, { type: 'acceptDraw' }, CARDS)
+    } else {
+      const me = s.seats[1]
+      const foe = s.seats[0]
+      const hit = [...foe.characters].filter((c) => c.hp > 0).sort((a, b) => a.hp - b.hp)[0]
+      const atk = [...me.characters].filter((c) => c.hp > 0).sort((a, b) => b.attack - a.attack)[0]
+      let acted = false
+      if (me.ap > 0 && atk && hit) {
+        const r = applyAction(s, 1, { type: 'attack', attackerId: atk.uid, targetId: hit.uid }, CARDS)
+        acted = !r?.error
+      }
+      if (!acted && me.ap > 0 && atk?.active && s.phase === 'playing') {
+        const r = applyAction(s, 1, { type: 'skill', actorId: atk.uid, skillKey: atk.active.key, enemyTargetId: hit?.uid }, CARDS)
+        acted = !r?.error
+      }
+      if (!acted) applyAction(s, 1, { type: 'endTurn' }, CARDS)
+    }
+  } catch (err) {
+    console.error('[ai]', err.message)
+  }
+  broadcast(room)
+  if (room.state?.phase === 'playing' && room.state.turnSeat === 1) {
+    setTimeout(() => maybeAi(room), 1100)
+  }
+}
 
 // 每 30 秒扫一遍：回收没人要的房间，掐掉没心跳的连接
 setInterval(() => {
@@ -144,7 +179,48 @@ wss.on('connection', (ws) => {
       rooms.set(code, room)
       ws.roomCode = code
       ws.seat = 0
+      // 单人模式：第二座位交给一个简单的 AI
+      if (msg.solo) {
+        room.vsAi = true
+        room.players.push({ ws: null, seat: 1, name: '汐（离线）' })
+        room.state = createGame({ players: room.players.map((p) => ({ name: p.name })), cards: CARDS })
+        send(ws, { type: 'joined', room: code, seat: 0, cards: CARDS })
+        broadcast(room)
+        setTimeout(() => maybeAi(room), 1200)
+        return
+      }
       send(ws, { type: 'joined', room: code, seat: 0, cards: CARDS })
+      return
+    }
+
+    // 随机匹配：进队列，凑到两个人就自动建房
+    if (msg.type === 'queue') {
+      const name = String(msg.name || '玩家').slice(0, 12)
+      const i = waiting.findIndex((w) => w.ws.readyState !== 1)
+      if (i >= 0) {
+        const other = waiting.splice(i, 1)[0]
+        const code = makeCode()
+        const room = { code, players: [], state: null, createdAt: Date.now(), lastActive: Date.now() }
+        room.players.push({ ws: other.ws, seat: 0, name: other.name })
+        room.players.push({ ws, seat: 1, name })
+        rooms.set(code, room)
+        for (const p of room.players) {
+          p.ws.roomCode = code
+          p.ws.seat = p.seat
+          send(p.ws, { type: 'joined', room: code, seat: p.seat, cards: CARDS })
+        }
+        room.state = createGame({ players: room.players.map((p) => ({ name: p.name })), cards: CARDS })
+        broadcast(room)
+        return
+      }
+      waiting.push({ ws, name })
+      send(ws, { type: 'waiting' })
+      return
+    }
+
+    if (msg.type === 'dequeue') {
+      const i = waiting.findIndex((w) => w.ws === ws)
+      if (i >= 0) waiting.splice(i, 1)
       return
     }
 
@@ -180,6 +256,7 @@ wss.on('connection', (ws) => {
       if (room.players.length < 2) return send(ws, { type: 'error', message: '对手还没进来' })
       room.state = createGame({ players: room.players.map((p) => ({ name: p.name })), cards: CARDS })
       broadcast(room)
+      if (room.vsAi) setTimeout(() => maybeAi(room), 1200)
       return
     }
 
@@ -193,10 +270,14 @@ wss.on('connection', (ws) => {
       }
       if (result?.error) send(ws, { type: 'error', message: result.error })
       broadcast(room)
+      if (room.vsAi) setTimeout(() => maybeAi(room), 900)
     }
   })
 
   ws.on('close', () => {
+    // 从匹配队列里拿掉
+    const qi = waiting.findIndex((w) => w.ws === ws)
+    if (qi >= 0) waiting.splice(qi, 1)
     const room = rooms.get(ws.roomCode)
     if (!room) return
     // 把断了的人从玩家列表拿掉（重连靠 ghost 匹配，只在没连上时才算离开）
