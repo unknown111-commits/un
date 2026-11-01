@@ -47,6 +47,18 @@ $('join').onclick = () => {
   lastRoom = code
   connect(() => send({ type: 'join', room: code, name: lastName }))
 }
+// 随机匹配：进队列，凑齐两人自动开局
+$('match').onclick = () => {
+  lastName = $('name').value || '玩家'
+  connect(() => send({ type: 'queue', name: lastName }))
+  showLobbyMsg('正在找对手…')
+}
+// 单人离线：对面那个位置交给服务端的简单 AI
+$('solo').onclick = () => {
+  lastName = $('name').value || '玩家'
+  connect(() => send({ type: 'create', name: lastName, solo: true }))
+  showLobbyMsg('正在摆牌…')
+}
 function showLobbyMsg(t) { $('lobby-msg').textContent = t }
 
 function connect(onOpen) {
@@ -79,6 +91,10 @@ const act = (action) => { heldCard = null; send({ type: 'action', action }) }
 
 function onMessage(ev) {
   const msg = JSON.parse(ev.data)
+  if (msg.type === 'waiting') {
+    showLobbyMsg('正在找对手…有人进来就开局')
+    return
+  }
   if (msg.type === 'joined') {
     mySeat = msg.seat
     cards = msg.cards
