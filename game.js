@@ -510,11 +510,18 @@ function startTurn(state) {
       const ally = q.allyTargetId ? seat.characters.find((c) => c.uid === q.allyTargetId) : null
       const enemy = q.enemyTargetId ? foe.characters.find((c) => c.uid === q.enemyTargetId) : null
       log(state, `时间错位：${actor.name} 上回合没做完的那一手，现在补上了`)
+      // 补发不看冷却：这一手是上回合付过代价的
+      const savedCd = actor.cd
+      const savedCds = actor.cds ? { ...actor.cds } : null
+      actor.cd = 0
+      if (actor.cds) for (const k of Object.keys(actor.cds)) actor.cds[k] = 0
       try {
         useSkill(state, seat, foe, actor, ally, enemy, q.skillKey)
       } catch (e) {
         log(state, `那一手没接住：${e.message}`)
       }
+      actor.cd = savedCd
+      if (savedCds) actor.cds = savedCds
     }
   }
 
