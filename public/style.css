@@ -587,3 +587,209 @@ body {
   30% { filter: hue-rotate(-40deg) saturate(1.6) brightness(0.92); }
   100% { filter: none; }
 }
+
+/* ═══════════════════════════════════════════════
+   《海的记述》主题：雾、盐、褪色的信纸
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --sea-ink: #24333a;
+  --sea-ink-soft: #4a5b62;
+  --sea-mist: #c9d4d8;
+  --sea-paper: #f2efe6;
+  --sea-paper-2: #e6e2d6;
+  --sea-salt: #9fb0b5;
+  --sea-rust: #8c6a55;
+  --sea-line: rgba(36, 51, 58, 0.18);
+}
+
+body {
+  background:
+    radial-gradient(120% 80% at 50% -10%, #eef1f0 0%, #dfe6e7 38%, #cfdadd 78%, #c2ced2 100%);
+  color: var(--sea-ink);
+  font-family: "Songti SC", "SimSun", "Source Han Serif SC", Georgia, serif;
+  letter-spacing: 0.3px;
+}
+
+/* 一层水汽，压在最上面，让所有东西都退半步 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 40%),
+    repeating-linear-gradient(0deg, rgba(159, 176, 181, 0.045) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply;
+  z-index: 999;
+}
+
+.lobby h1,
+.brand {
+  font-family: inherit;
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  color: var(--sea-ink);
+}
+
+.lobby .sub {
+  color: var(--sea-ink-soft);
+  font-style: italic;
+  letter-spacing: 0.12em;
+}
+
+/* 按钮：一根细线，不填色 */
+.btn {
+  background: transparent;
+  border: 1px solid var(--sea-line);
+  color: var(--sea-ink);
+  border-radius: 2px;
+  letter-spacing: 0.18em;
+  font-family: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn:hover { border-color: var(--sea-ink-soft); background: rgba(255, 255, 255, 0.35); }
+.btn.primary {
+  background: rgba(36, 51, 58, 0.92);
+  color: var(--sea-paper);
+  border-color: transparent;
+}
+.btn.primary:hover { background: rgba(36, 51, 58, 1); }
+
+/* 输入框：只有一条底线 */
+input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--sea-line);
+  border-radius: 0;
+  color: var(--sea-ink);
+  font-family: inherit;
+  letter-spacing: 0.1em;
+}
+input:focus { border-bottom-color: var(--sea-ink-soft); outline: none; }
+input::placeholder { color: var(--sea-salt); }
+
+/* 牌桌：像摊在桌上的旧纸 */
+.table {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(230, 226, 214, 0.28));
+}
+
+/* 角色卡：纸片，细线框，几乎没有阴影 */
+.card {
+  background: linear-gradient(180deg, var(--sea-paper) 0%, var(--sea-paper-2) 100%);
+  border: 1px solid var(--sea-line);
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 2px 10px rgba(36, 51, 58, 0.06);
+}
+.card .cname {
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--sea-ink);
+}
+.card .cmate {
+  color: var(--sea-salt);
+  letter-spacing: 0.06em;
+  font-size: 11px;
+}
+.card .cstats { color: var(--sea-ink-soft); }
+
+/* 血条：一根墨线 */
+.card .hpbar {
+  height: 3px;
+  background: rgba(36, 51, 58, 0.1);
+  border-radius: 0;
+}
+.card .hpbar i {
+  background: linear-gradient(90deg, var(--sea-ink-soft), var(--sea-ink));
+  border-radius: 0;
+}
+.card .hpbar.low i { background: linear-gradient(90deg, #8c6a55, #6d4a38); }
+
+/* 星级：不用金色，用墨 */
+.card .star { color: var(--sea-rust); letter-spacing: 0.3em; }
+
+/* 级别色带换成一根细竖线 */
+.card.lv3::before { background: var(--sea-salt); }
+.card.lv4::before { background: var(--sea-ink-soft); }
+.card.lv5::before { background: var(--sea-rust); }
+
+/* 状态小签：像批注 */
+.chip {
+  background: transparent;
+  border: 1px solid var(--sea-line);
+  border-radius: 0;
+  color: var(--sea-ink-soft);
+  letter-spacing: 0.05em;
+}
+
+/* 手牌：两张信纸 */
+.handcard {
+  background: linear-gradient(180deg, #f7f4ec 0%, #ece8dc 100%);
+  border: 1px solid var(--sea-line);
+  border-radius: 2px;
+  box-shadow: 0 1px 6px rgba(36, 51, 58, 0.07);
+}
+.handcard.food { background: linear-gradient(180deg, #f7f3e8 0%, #efe8d8 100%); border-color: rgba(140, 106, 85, 0.28); }
+.handcard.book { background: linear-gradient(180deg, #f3f5f4 0%, #e4e9e8 100%); border-color: rgba(74, 91, 98, 0.28); }
+.handcard .hname { font-weight: 400; letter-spacing: 0.1em; color: var(--sea-ink); }
+.handcard .htype { color: var(--sea-salt); font-style: italic; }
+.handcard .hnote { color: var(--sea-ink-soft); }
+.handcard.held { outline: 1px solid var(--sea-rust); outline-offset: 3px; }
+
+/* 日志：一行行像信 */
+.logbox li {
+  color: var(--sea-ink-soft);
+  border-bottom: 1px dashed rgba(36, 51, 58, 0.07);
+  letter-spacing: 0.04em;
+}
+.logbox li.mine { color: var(--sea-ink); }
+
+/* 顶部那条：细线 */
+.topbar {
+  border-bottom: 1px solid var(--sea-line);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(2px);
+}
+
+/* 飘字与提示 */
+.toast, .event {
+  background: rgba(242, 239, 230, 0.96);
+  border: 1px solid var(--sea-line);
+  border-radius: 2px;
+  color: var(--sea-ink);
+  letter-spacing: 0.12em;
+  box-shadow: 0 4px 18px rgba(36, 51, 58, 0.12);
+}
+
+/* 详情面板 */
+.detail {
+  background: rgba(247, 244, 236, 0.985);
+  border: 1px solid var(--sea-line);
+  border-radius: 2px;
+  box-shadow: 0 10px 40px rgba(36, 51, 58, 0.16);
+}
+.detail-head { border-bottom: 1px solid var(--sea-line); letter-spacing: 0.16em; }
+.detail-block b { letter-spacing: 0.12em; color: var(--sea-ink); }
+.muted { color: var(--sea-salt); }
+
+/* 水纹：淡淡的横向等高线，铺在最底下一层 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-radial-gradient(circle at 20% 120%, transparent 0 38px, rgba(36, 51, 58, 0.028) 38px 39px),
+    repeating-radial-gradient(circle at 80% -20%, transparent 0 52px, rgba(36, 51, 58, 0.022) 52px 53px);
+  z-index: -1;
+}
+
+/* 题记 */
+.lobby .epigraph {
+  margin: 6px 0 22px;
+  color: var(--sea-salt);
+  font-style: italic;
+  letter-spacing: 0.22em;
+  font-size: 12px;
+}
