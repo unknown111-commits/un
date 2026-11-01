@@ -10,7 +10,8 @@ let selEnemy = null   // 选中的对手角色
 let heldCard = null   // 拿在手上的那张牌（点击手牌选中，再点角色放上去）
 let pendingSkill = null // 需要一个己方目标的主动技（莫言的生死疲劳）
 let pendingReplace = false // 场上满了，等着点一个换下去的人
-let livingActor = null // 余华《活着》：正在一刀一刀砍
+let livingActor = null
+let lastLogLine = '' // 余华《活着》：正在一刀一刀砍
 
 // 状态的说明：卡面上挂名字，鼠标停上去看这句
 const STATUS_TEXT = {
@@ -100,6 +101,12 @@ function onMessage(ev) {
       const yh = state.seats[mySeat].characters.find((c) => c.uid === livingActor)
       if (!yh || (yh.empathy ?? 0) <= 0) livingActor = null
     }
+    // 鳄鱼街吞技能：整块画面压一层紫，写明被封了
+    const latest = [...(state.log ?? [])].reverse().find((l) => typeof l === 'string' && (l.includes('鳄鱼街') || l.includes('时间错位')))
+    if (latest && latest !== lastLogLine) {
+      lastLogLine = latest
+      if (latest.includes('推到下一回合') || latest.includes('推到下一回合')) flashScreen('surreal')
+    }
     render()
     return
   }
@@ -134,8 +141,18 @@ function render() {
   $('ap').textContent = mine.ap
   const bits = []
   if (mine.handCredits > 0) bits.push(`手牌额度剩 ${mine.handCredits}`)
-  if (mine.pendingDamage) bits.push(`下一击：${mine.pendingDamage.damageType} +${mine.pendingDamage.bonusPct ?? 0}%`)
+  if (mine.pendingDamage) {
+    const p = mine.pendingDamage
+    const bits2 = [`${p.damageType ?? '现实'}伤害`]
+    if (p.bonusPct) bits2.push(`+${p.bonusPct}%`)
+    if (p.fixedBonus) bits2.push(`固定 +${Math.round(p.fixedBonus)}%`)
+    if (p.flat) bits2.push(`点数 +${p.flat}`)
+    if (p.convertRatioPct) bits2.push(`转成 ${p.convertRatioPct}% 倍`)
+    bits.push(`下一击：${bits2.join(' ')}`)
+  }
   if (mine.inExtra) bits.push('额外回合（只有 1 点，结束交回）')
+  if (mine.delayedSkills?.length) bits.push(`被鳄鱼街扣着 ${mine.delayedSkills.length} 手，下回合才发`)
+  if (foe.crocodile) bits.push(`对面的鳄鱼街还开着（剩 ${foe.crocodile.rounds} 回合）`)
   $('credits').textContent = bits.length ? `（${bits.join(' · ')}）` : ''
   $('my-name').textContent = `我方 · ${mine.name}`
   $('my-ap').textContent = `行动值 ${mine.ap} · 场上 ${mine.characters.length}/4`
@@ -160,10 +177,6 @@ function render() {
                 : '点手牌拿起一张，再点角色放上去；拖也行；点角色看详情'))))))
 
   renderField($('foe-field'), foe.characters, true, myTurn)
-  // 疗养院的父亲也算对面场上的一个单位
-  if (foe.summon) {
-    renderField($('foe-field'), [foe.summon, ...foe.characters], true, myTurn)
-  }
   renderField($('my-field'), mine.characters, false, myTurn)
   renderPending(state.pending, myTurn)
   renderHand(mine.hand, myTurn)
@@ -239,7 +252,7 @@ function renderField(el, list, isFoe, myTurn) {
   }
   for (const c of list) {
     const card = document.createElement('div')
-    card.className = 'card'
+    card.className = 'card lv' + (c.level ?? 3)
     card.dataset.uid = c.uid
     // 掉血了就抖一下，飘个伤害数字
     const prevHp = hpSnapshot.get(c.uid)
@@ -299,11 +312,13 @@ function renderField(el, list, isFoe, myTurn) {
     card.innerHTML = `
       <div class="cname">${esc(c.name)}<span class="star">${'★'.repeat(c.starRank ?? 1)}</span></div>
       <div class="cmate">${esc(c.title)} · ${c.level} 级 · 攻 ${c.attack}</div>
-      <div class="cstats"><span>血 <b>${c.hp}</b>/${c.maxHp}</span><span>盾 ${c.shield}</span></div>
+      <div class="cstats"><span>血 <b>${c.hp}</b>/${c.maxHp}</span>${c.shield > 0 ? `<span class="shield real">现实盾 ${c.shield}</span>` : ''}${(c.shieldSurreal ?? 0) > 0 ? `<span class="shield surreal">超现实盾 ${c.shieldSurreal}</span>` : ''}</div>
       <div class="hpbar${c.hp / c.maxHp < 0.35 ? ' low' : ''}"><i style="width:${Math.max(0, (c.hp / c.maxHp) * 100)}%"></i></div>
       ${(c.traits || []).length ? `<div class="ctraits">${c.traits.map((t) => `<span class="trait">${esc(t)}</span>`).join('')}</div>` : ''}
       ${statusChips(c)}
       ${c.cardId === 'yuhua' ? `<div class="cspecial muted">${c.phase === 'late' ? `共情 ${c.empathy ?? 0}` : `锋利 ${c.sharp ?? 0}/8`}</div>` : ''}
+      ${c.disability ? `<div class="cspecial muted">残疾 ${c.disability} 层</div>` : ''}
+      ${c.dreams ? `<div class="cspecial muted">梦想 ${c.dreams} 层</div>` : ''}
       ${c.active ? `<div class="cspecial">主动 · ${esc(c.active.name)}${c.cd > 0 ? ` · 冷却 ${c.cd}` : ''}</div>` : ''}
       ${c.passive ? `<div class="cspecial">被动 · ${esc(c.passive.name)}</div>` : ''}
     `
@@ -315,6 +330,15 @@ function renderField(el, list, isFoe, myTurn) {
     detailBtn.textContent = '详情'
     detailBtn.onclick = (ev) => { ev.stopPropagation(); showDetail(c) }
     bar.appendChild(detailBtn)
+
+    // 在畜生道里的人，能自己走出来
+    if (!isFoe && myTurn && (c.statuses || []).some((s) => s.name === '畜生道')) {
+      const exit = document.createElement('button')
+      exit.className = 'btn tiny'
+      exit.textContent = '退出畜生道'
+      exit.onclick = (ev) => { ev.stopPropagation(); act({ type: 'exitButchery', targetId: c.uid }) }
+      bar.appendChild(exit)
+    }
 
     if (!isFoe && myTurn) {
       const atk = document.createElement('button')
@@ -329,7 +353,9 @@ function renderField(el, list, isFoe, myTurn) {
       }
       bar.appendChild(atk)
 
-      if (c.active) {
+      // 海明威进了硬汉，这一招就封住了
+      const hlocked = c.cardId === 'hemingway' && (c.statuses || []).some((s) => s.name === '硬汉')
+      if (c.active && !hlocked) {
         const sk = document.createElement('button')
         sk.className = 'btn tiny'
         sk.textContent = c.cd > 0 ? `冷却 ${c.cd}` : '主动技'
@@ -474,6 +500,7 @@ function showDetail(c) {
     ${c.passive ? `<div class="detail-block"><b>被动 · ${esc(c.passive.name)}</b><p>${esc(c.passive.text)}</p></div>` : ''}
     ${extra ? `<div class="detail-block"><b>另外</b><ul>${extra}</ul></div>` : ''}
     ${stars ? `<div class="detail-block"><b>星级</b><ul>${stars}</ul></div>` : ''}
+    ${(c.disability || c.dreams) ? `<div class="detail-block"><b>层数</b><p>${c.disability ? `残疾 ${c.disability} 层` : ''}${c.disability && c.dreams ? '　' : ''}${c.dreams ? `梦想 ${c.dreams} 层` : ''}</p></div>` : ''}
     ${(c.statuses || []).length ? `<div class="detail-block"><b>当前状态</b><p>${c.statuses.map((s) => `${esc(s.name)}${s.turns < 99 ? `（${s.turns} 回合）` : ''}：${esc(STATUS_TEXT[s.name] ?? '')}`).join('；')}</p></div>` : ''}
   `
   box.hidden = false
@@ -570,7 +597,9 @@ function renderHand(hand, myTurn) {
     }
     const c = handById.get(id)
     const el = document.createElement('div')
-    el.className = 'handcard' + (heldCard === id ? ' held' : '')
+    // 食物和书用两种底子，一眼能分开
+    const kind = (c?.type ?? '').includes('食') ? 'food' : ((c?.type ?? '').includes('书') ? 'book' : 'other')
+    el.className = 'handcard ' + kind + (heldCard === id ? ' held' : '')
     el.innerHTML = `
       <div class="hname">${esc(c?.name ?? id)}</div>
       <div class="htype">${esc(c?.type ?? '')}</div>
@@ -645,14 +674,14 @@ $('resign').onclick = () => {
 
 /* ── 小工具 ── */
 let flashTimer2 = null
-function flashScreen() {
+function flashScreen(kind) {
   const t = $('table')
   if (!t) return
   t.classList.remove('quake')
   void t.offsetWidth
-  t.classList.add('quake')
+  t.classList.add(kind === 'surreal' ? 'drained' : 'quake')
   clearTimeout(flashTimer2)
-  flashTimer2 = setTimeout(() => t.classList.remove('quake'), 420)
+  flashTimer2 = setTimeout(() => t.classList.remove('quake', 'drained'), 900)
 }
 
 let toastTimer = null
