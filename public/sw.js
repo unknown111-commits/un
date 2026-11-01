@@ -1,6 +1,6 @@
 // 只缓存外壳：HTML / JS / CSS / 图标。房间数据永远走网络，不缓存。
-const CACHE = 'wenxuesha-v4'
-const SHELL = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json', '/icon-192.png', '/icon-512.png']
+const CACHE = 'wenxuesha-v5'
+const SHELL = ['/', '/index.html', '/app.js', '/style.css', '/manifest.json', '/icon-192.png', '/icon-512.png', '/sea.svg']
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()))
