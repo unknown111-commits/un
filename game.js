@@ -58,6 +58,9 @@ function makeCharacter(card, starRank = 1) {
     maxHp: hp,
     shield: traits.length * DEFAULTS.shieldPerTrait,
     shieldMax: traits.length * DEFAULTS.shieldPerTrait,
+    // 超现实适性单独记一层，跟现实适性分开显示（2026-11-01）
+    shieldSurreal: 0,
+    shieldSurrealMax: 0,
     cd: 0,
     statuses: [],
     tricks: [],
@@ -226,9 +229,9 @@ function shareHeal(seat, healed, amount, state) {
   }
 }
 
-function heal(ch, amount) {
-  // 余华不可被治疗（一星效果，永远成立）
-  if (ch.cardId === 'yuhua') return
+function heal(ch, amount, opts = {}) {
+  // 余华不可被治疗；只有标了 bypass 的（黄酒炒猪肝）能进去
+  if (ch.cardId === 'yuhua' && !opts.bypass) return
   const amt = Math.max(0, Math.round(amount))
   // 硬汉状态：所有恢复量转化为攻击力
   if (hasStatus(ch, '硬汉')) {
@@ -247,11 +250,18 @@ function hurt(ch, amount, state, source = '') {
     dmg -= reduce
     if (state) log(state, `${ch.name} 的「天之苍苍」抵掉 ${reduce}`)
   }
+  // 现实适性那层盾先挡，再挡超现实适性那层
   if (ch.shield > 0) {
     const absorbed = Math.min(ch.shield, dmg)
     ch.shield -= absorbed
     dmg -= absorbed
-    if (absorbed > 0 && state) log(state, `${ch.name} 的护盾抵掉 ${absorbed}`)
+    if (absorbed > 0 && state) log(state, `${ch.name} 的现实适性抵掉 ${absorbed}`)
+  }
+  if (ch.shieldSurreal > 0 && dmg > 0) {
+    const absorbed = Math.min(ch.shieldSurreal, dmg)
+    ch.shieldSurreal -= absorbed
+    dmg -= absorbed
+    if (absorbed > 0 && state) log(state, `${ch.name} 的超现实适性抵掉 ${absorbed}`)
   }
   ch.hp -= dmg
   if (ch.hp <= 0) {
@@ -302,6 +312,34 @@ function hurtTeam(team, total, state, source, attackerTeam = null) {
   }
   if (state) log(state, `${source}：${dmg} 点摊到全体，总血量还剩 ${pool - dmg}`)
   void left
+}
+
+/** 疗养院召出的父亲：也是场上一个角色 */
+function makeFather(state, maxHp = 3000) {
+  uidSeq += 1
+  return {
+    uid: `father-${uidSeq}`,
+    cardId: 'father',
+    name: '父亲',
+    title: '沙漏下的疗养院',
+    level: 0,
+    hp: maxHp,
+    maxHp,
+    attack: 0,
+    shield: 0,
+    shieldMax: 0,
+    traits: [],
+    statuses: [],
+    starRank: 1,
+    cd: 0,
+    active: null,
+    passive: null,
+    tricks: [],
+    isPhilosopher: false,
+    hideout: 0,
+    rounds: 5,
+    isSummon: true,
+  }
 }
 
 /** 蛙造出来的娃娃：2000 血上限，没有技能 */
@@ -374,13 +412,34 @@ function startTurn(state) {
   seat.finalDouble = false
   seat.foodThisTurn = 0
 
+  // 舒尔茨的星级随手上的那位走，升星之后效果跟着变
+  const schulzOnField = seat.characters.find((c) => c.cardId === 'schulz')
+  if (schulzOnField) seat.schulzStar = schulzOnField.starRank ?? seat.schulzStar ?? 1
+
   for (const ch of seat.characters) {
     if (ch.cd > 0) ch.cd -= 1
+    // 舒尔茨三招分开转
+    if (ch.cds) {
+      for (const k of Object.keys(ch.cds)) if (ch.cds[k] > 0) ch.cds[k] -= 1
+      const left = Object.values(ch.cds).filter((n) => n > 0)
+      ch.cd = left.length ? Math.min(...left) : 0
+    }
     if (hasStatus(ch, '畜生道')) {
       ch.hp = ch.maxHp
       log(state, `${ch.name} 在畜生道里，每回合回满`)
     }
     if (ch.cardId === 'hemingway' && hasStatus(ch, '硬汉')) {
+      // 硬汉里攒到的护盾，每回合自动折成血
+      const extra = (ch.shield ?? 0) + (ch.shieldSurreal ?? 0)
+      if (extra > 0) {
+        ch.maxHp += extra
+        ch.hp += extra
+        ch.shield = 0
+        ch.shieldMax = 0
+        ch.shieldSurreal = 0
+        ch.shieldSurrealMax = 0
+        log(state, `${ch.name} 硬汉：护盾 ${extra} 自动折进血里（上限 ${ch.maxHp}）`)
+      }
       // 每回合加的 500 点不转化为攻击力，所以直接加血
       ch.hp = Math.min(ch.maxHp, ch.hp + 500)
       log(state, `${ch.name} 硬汉状态，血量 +500`)
@@ -390,10 +449,19 @@ function startTurn(state) {
       log(state, `${ch.name} 银河铁道之夜：自扣 100`)
     }
     if (ch.cardId === 'shitietesheng') {
-      ch.disability = (ch.disability ?? 0) + 1
-      for (const ally of seat.characters) addStatus(ally, '梦想', 99, null)
-      log(state, `史铁生：残疾 ${ch.disability} 层`)
-      if (ch.disability >= 6 && !hasStatus(ch, '友谊')) {
+      // 友谊（一星）：残疾到五层就封顶，不再往上涨
+      const cap = (ch.starRank ?? 1) >= 1 ? 5 : 6
+      if ((ch.disability ?? 0) < cap) ch.disability = (ch.disability ?? 0) + 1
+      for (const ally of seat.characters) {
+        // 海明威：收到的梦想也转成嘲讽，不攒梦想
+        if (ally.cardId === 'hemingway') {
+          addStatus(ally, '嘲讽', 1, state)
+          continue
+        }
+        ally.dreams = Math.min(ally.dreamsCap ?? 5, (ally.dreams ?? 0) + 1)
+      }
+      log(state, `史铁生：残疾 ${ch.disability} 层，全队梦想 ${ch.dreams ?? 0} 层`)
+      if (ch.disability >= 6) {
         ch.hp = 0
         log(state, '史铁生的残疾到六层，退场')
       }
@@ -432,11 +500,29 @@ function startTurn(state) {
   }
   seat.characters = seat.characters.filter((c) => c.hp > 0)
 
+  // 上一个被鳄鱼街推迟的技能，现在补上
+  if (seat.delayedSkills?.length) {
+    const queued = [...seat.delayedSkills]
+    seat.delayedSkills = []
+    for (const q of queued) {
+      const actor = seat.characters.find((c) => c.uid === q.actorId)
+      if (!actor || actor.hp <= 0) continue
+      const ally = q.allyTargetId ? seat.characters.find((c) => c.uid === q.allyTargetId) : null
+      const enemy = q.enemyTargetId ? foe.characters.find((c) => c.uid === q.enemyTargetId) : null
+      log(state, `时间错位：${actor.name} 上回合没做完的那一手，现在补上了`)
+      try {
+        useSkill(state, seat, foe, actor, ally, enemy, q.skillKey)
+      } catch (e) {
+        log(state, `那一手没接住：${e.message}`)
+      }
+    }
+  }
+
   // 父亲的最后逃亡：父亲死后一回合回归，血限扣 500，随机一个敌方单位打回一星
   if (seat.fatherDeadAt && state.round >= seat.fatherDeadAt + 1) {
     seat.fatherDeadAt = null
     const max = Math.max(500, seat.fatherMax ?? 3000)
-    seat.summon = { uid: 'father', cardId: 'father', name: '父亲', hp: max, maxHp: max, attack: 0, shield: 0, statuses: [], traits: [], starRank: 1, tricks: [], hideout: 0, rounds: 5 }
+    seat.characters.push(makeFather(state, max))
     const rand = foe.characters[Math.floor(Math.random() * foe.characters.length)]
     if (rand) {
       rand.starRank = 1
@@ -445,12 +531,13 @@ function startTurn(state) {
     log(state, '父亲逃回来了：血限扣 500，五回合后又要散')
   }
   // 舒尔茨的疗养院：父亲每回合扣 600；五回合后散场，蛰居兑现
-  if (seat.summon) {
-    seat.summon.hp -= 600
+  const father = seat.characters.find((c) => c.cardId === 'father')
+  if (father) {
+    father.hp -= 600
     // 肉桂店（四星）：疗养院一直开，回合不再倒数
-    if ((seat.schulzStar ?? 1) < 4) seat.summon.rounds -= 1
-    log(state, `父亲在疗养院又瘦了 600（${seat.summon.hp}）`)
-    if (seat.summon.hp <= 0) {
+    if ((seat.schulzStar ?? 1) < 4) father.rounds -= 1
+    log(state, `父亲在疗养院又瘦了 600（${father.hp}）`)
+    if (father.hp <= 0) {
       log(state, '父亲死了，人偶次数重置')
       seat.dolls = 5
       // 蟑螂（二星）：召唤物死亡，人偶再加 2
@@ -469,12 +556,12 @@ function startTurn(state) {
       } else {
         seat.fatherDeadAt = state.round
       }
-      seat.summon = null
-    } else if (seat.summon.rounds <= 0) {
-      const layers = seat.summon.hideout
-      if (layers > 0) hurtTeam(foe, layers * 500, state, '蛰居：疗养院散场的荒诞伤害')
+      seat.characters = seat.characters.filter((c) => c.cardId !== 'father')
+    } else if (father.rounds <= 0) {
+      const layers = father.hideout ?? 0
+      if (layers > 0) hurtTeam(foe.characters, layers * 500, state, '蛰居：疗养院散场的荒诞伤害')
       log(state, '疗养院关了')
-      seat.summon = null
+      seat.characters = seat.characters.filter((c) => c.cardId !== 'father')
     }
   }
   // 鳄鱼街：三回合到期，把吞掉的伤害一并奉还
@@ -560,11 +647,13 @@ function pruneDead(state) {
 
 function checkVictory(state) {
   pruneDead(state)
-  for (const side of state.seats) if (side.characters.length > 0) side.hadCharacters = true
+  // 只数作家：娃娃、父亲这类召唤出来的，不算占位，也不参与胜负
+  const writers = (side) => side.characters.filter((c) => !c.isSummon)
+  for (const side of state.seats) if (writers(side).length > 0) side.hadCharacters = true
   for (let i = 0; i < 2; i += 1) {
     const foe = state.seats[other(i)]
-    // 只看场上：上过场的人全没了就算输，不管角色池还剩几张
-    if (foe.hadCharacters && foe.characters.length === 0) {
+    // 只看场上：上过场的作家全没了就算输，不管角色池还剩几张
+    if (foe.hadCharacters && writers(foe).length === 0) {
       state.phase = 'over'
       state.winner = i
       log(state, `${state.seats[i].name} 胜利`)
@@ -579,6 +668,11 @@ function addPendingDamage(seat, part) {
     seat.pendingDamage = { parts: [] }
   }
   seat.pendingDamage.parts.push(part)
+  // 海明威在场：攒下来的加成也算增益，转成嘲讽挂在他身上
+  const hemingway = seat.characters.find((c) => c.cardId === 'hemingway')
+  if (hemingway) {
+    addStatus(hemingway, '嘲讽', 1, null)
+  }
   // 余华：每获得一层增益（手牌加成也算），额外攒一层锋利
   const yuhua = seat.characters.find((c) => c.cardId === 'yuhua' && c.phase === 'early')
   if (yuhua) {
@@ -633,9 +727,16 @@ function applyHandEffects(state, seat, foe, card, drop) {
         if (!target) return '这张牌要先选一个自己场上的角色'
         const pct = eff.doubleIfLast && seat.lastHandCardId === eff.doubleIfLast ? eff.pct * 2 : eff.pct
         const amt = (target.maxHp * pct) / 100
-        heal(target, amt)
+        heal(target, amt, { bypass: Boolean(eff.bypass) })
         log(state, `${target.name} 回复 ${pct}% 血量上限`)
         shareHeal(seat, target, amt, state)
+        break
+      }
+      case 'statusTarget': {
+        // 拖到谁身上就给谁上状态，敌我都行（50 万马克的面包）
+        if (!drop) return '这张牌要拖到一个角色身上'
+        addStatus(drop, eff.status, eff.turns, state)
+        log(state, `${drop.name} 被挂上『${eff.status}』`)
         break
       }
       case 'healToFull':
@@ -686,12 +787,14 @@ function applyHandEffects(state, seat, foe, card, drop) {
         break
       case 'clearDreams':
         for (const side of state.seats) {
-          for (const c of side.characters) c.statuses = c.statuses.filter((s) => s.name !== '梦想')
+          for (const c of side.characters) c.dreams = 0
         }
         log(state, '所有『梦想』被抹掉了')
         break
       case 'dreamCap':
+        // 扶轮问路：把全队梦想上限提到七层
         seat.dreamCap = eff.cap
+        for (const ally of seat.characters) ally.dreamsCap = eff.cap
         log(state, `梦想上限提到 ${eff.cap} 层`)
         break
       case 'purgeTiesheng':
@@ -820,7 +923,8 @@ function applyHandEffects(state, seat, foe, card, drop) {
         const loss = Math.round(target.hp * 0.5)
         hurt(target, loss, state)
         const bonus = Math.floor(loss / 100) * 10
-        seat.pendingDamage = { damageType: '现实', bonusPct: (seat.pendingDamage?.bonusPct ?? 0) + bonus }
+        // 走统一的加成入口，余华这边也会跟着攒锋利
+        addPendingDamage(seat, { damageType: '现实', bonusPct: bonus })
         log(state, `${target.name} 卖了 ${loss} 血，下一击现实 +${bonus}%`)
         break
       }
@@ -839,16 +943,18 @@ function activeBlocked(ch) {
 function useSkill(state, seat, foe, actor, allyTarget, enemyTarget, skillKey = null) {
   if (!actor.active) return '这个角色没有主动技'
   if (activeBlocked(actor)) return '它的主动技被封住了'
-  if (actor.cd > 0) return `还要等 ${actor.cd} 回合`
+  // 舒尔茨三招分开算冷却
+  if (actor.cardId === 'schulz') {
+    const k = skillKey ?? 'renou'
+    const left = actor.cds?.[k] ?? 0
+    if (left > 0) return `这一招还要等 ${left} 回合`
+  } else if (actor.cd > 0) return `还要等 ${actor.cd} 回合`
   if (!spendAp(seat)) return '行动值不够'
 
   switch (actor.cardId) {
     case 'dickens':
-      seat.pendingDamage = {
-        damageType: '现实',
-        bonusPct: (seat.pendingDamage?.bonusPct ?? 0) + 100,
-        fixedBonus: 100,
-      }
+      // 走统一的加成入口，攒在一起不覆盖
+      addPendingDamage(seat, { damageType: '现实', bonusPct: 100, fixedBonus: 100 })
       log(state, `${actor.name} 发动大卫科波菲尔：下一击现实 +100%`)
       break
     case 'murakami':
@@ -871,10 +977,10 @@ function useSkill(state, seat, foe, actor, allyTarget, enemyTarget, skillKey = n
     case 'schulz': {
       const key = skillKey ?? 'renou'
       if (key === 'liaoyang') {
-        if (seat.summon) return '疗养院已经开着'
-        seat.summon = { uid: 'father', cardId: 'father', name: '父亲', hp: 3000, maxHp: 3000, attack: 0, shield: 0, statuses: [], traits: [], starRank: 1, tricks: [], hideout: 0, rounds: 5 }
+        if (seat.characters.some((c) => c.cardId === 'father')) return '疗养院已经开着'
+        seat.characters.push(makeFather(state))
         seat.summonCount = (seat.summonCount ?? 0) + 1
-        log(state, '疗养院开了：父亲 3000 血，每回合扣 600，挨打攒蛰居')
+        log(state, '疗养院开了：父亲上场，3000 血，每回合瘦 600，挨打攒蛰居')
         break
       }
       if (key === 'eyu') {
@@ -933,7 +1039,7 @@ function useSkill(state, seat, foe, actor, allyTarget, enemyTarget, skillKey = n
       for (let i = 0; i < hits; i += 1) {
         let one = Math.round(100 * (1 + (pending.bonusPct ?? 0) / 100)) + (pending.flat ?? 0)
         if (hasStatus(actor, '攻-100')) one -= 100
-        if (hasStatus(actor, '梦想')) one += 100
+        if (actor.dreams) one += actor.dreams * 100
         one = Math.max(1, one)
         hurt(t, one, state, '活着')
         total += one
@@ -968,14 +1074,19 @@ function useSkill(state, seat, foe, actor, allyTarget, enemyTarget, skillKey = n
       break
     }
     case 'hemingway': {
-      // 老人与海：护盾（现实适性）转成血量，血量提到 4000 以上
-      const shieldToHp = actor.shield ?? 0
+      // 已经在硬汉里就封着主动技，一个人只有一次
+      if (hasStatus(actor, '硬汉')) return `${actor.name} 已经在硬汉里，这一招封住了`
+      // 老人与海：现实适性、超现实适性一起折进血量，血量提到 4000 以上
+      const shieldToHp = (actor.shield ?? 0) + (actor.shieldSurreal ?? 0)
       actor.maxHp = 4000 + shieldToHp
       actor.hp = actor.maxHp
       actor.shield = 0
       actor.shieldMax = 0
+      actor.shieldSurreal = 0
+      actor.shieldSurrealMax = 0
+      actor.traits = []
       addStatus(actor, '硬汉', 99, state)
-      log(state, `${actor.name} 进入硬汉：护盾 ${shieldToHp} 转成血，血量 ${actor.maxHp}，之后所有恢复变攻击力`)
+      log(state, `${actor.name} 进入硬汉：护盾 ${shieldToHp} 折进血里，血量上限 ${actor.maxHp}，之后所有恢复变攻击力`)
       break
     }
     case 'miyazawa': {
@@ -991,7 +1102,16 @@ function useSkill(state, seat, foe, actor, allyTarget, enemyTarget, skillKey = n
     default:
       return '这个主动技还没接进引擎'
   }
-  actor.cd = Number(actor.active.cd ?? 0) + 1
+  // 舒尔茨三招各有各的冷却，其余角色共用一个
+  if (actor.cardId === 'schulz') {
+    const key = skillKey ?? 'renou'
+    actor.cds = actor.cds ?? {}
+    const own = key === 'liaoyang' ? 5 : key === 'eyu' ? 8 : 3
+    actor.cds[key] = own + 1
+    actor.cd = Math.min(...Object.values(actor.cds).filter((n) => n > 0))
+  } else {
+    actor.cd = Number(actor.active.cd ?? 0) + 1
+  }
   return null
 }
 
@@ -1042,11 +1162,13 @@ function runAction(state, seatIndex, action, cards) {
         return { ok: true }
       }
       // 场上满员：得先指定换下谁（换下的回角色池，之后还能再抽到）
-      if (seat.characters.length >= MAX_READ) {
+      // 只数作家：娃娃、父亲这类召唤物不占位
+      const writersOnField = seat.characters.filter((c) => !c.isSummon)
+      if (writersOnField.length >= MAX_READ) {
         if (!action.replaceUid) return { error: '场上满了：先点一名场上角色，把他换下去' }
-        const out = seat.characters.find((c) => c.uid === action.replaceUid)
+        const out = writersOnField.find((c) => c.uid === action.replaceUid)
         if (!out) return { error: '没找到要换下的那个角色' }
-        if (state.pending.isPhilosopher && out.isPhilosopher === false && seat.characters.some((c) => c.isPhilosopher && c.uid !== out.uid)) {
+        if (state.pending.isPhilosopher && out.isPhilosopher === false && writersOnField.some((c) => c.isPhilosopher && c.uid !== out.uid)) {
           return { error: '哲学家只能有一位' }
         }
         seat.characters = seat.characters.filter((c) => c.uid !== out.uid)
@@ -1056,6 +1178,8 @@ function runAction(state, seatIndex, action, cards) {
       if (state.pending.isPhilosopher && seat.characters.some((c) => c.isPhilosopher)) return { error: '哲学家只能有一位' }
       // 上场不耗行动值：抽牌落定是回合流程里的动作，不算行为（2026-10-31 晚改）
       seat.characters.push(state.pending)
+      // 扶轮问路已经用过的话，新上场的也按七层算
+      if (seat.dreamCap) state.pending.dreamsCap = seat.dreamCap
       log(state, `${seat.name} 阅读 ${state.pending.name}（${state.pending.starRank} 星）`)
       // 上场的卡也回池：之后还能抽到同名，靠重复抽来升星
       if (!seat.charPool.includes(state.pending.cardId)) seat.charPool.push(state.pending.cardId)
@@ -1116,7 +1240,7 @@ function runAction(state, seatIndex, action, cards) {
       const taunted = foe.characters.filter((c) => hasStatus(c, '嘲讽') && !hasStatus(c, '追忆'))
       let target = foe.characters.find((c) => c.uid === action.targetId)
       // 疗养院的父亲也算一个可打的目标
-      if (!target && action.targetId === 'father' && foe.summon) target = foe.summon
+      if (!target && action.targetId === 'father') target = foe.characters.find((c) => c.cardId === 'father') ?? null
       // 追忆里的人不会被单体选中
       if (target && hasStatus(target, '追忆')) {
         log(state, `${target.name} 在追忆里，这一击够不着他`)
@@ -1146,12 +1270,13 @@ function runAction(state, seatIndex, action, cards) {
       let damageType = pending.damageType
       // 莫言艺术加工：开着就把现实伤害换成超现实
       if (seat.artConvert && damageType === '现实') damageType = '超现实'
+      // 攒下的加成一并叠上去：转换定基数、固定加值加上去、百分比乘上去、点数再补
       let dmg = attacker.attack * DEFAULTS.realDamageRatio
-      if (pending.fixedBonus) dmg = attacker.attack * (DEFAULTS.realDamageRatio + pending.fixedBonus / 100)
-      else if (pending.convertRatioPct) dmg = attacker.attack * (pending.convertRatioPct / 100)
-      else dmg = dmg * (1 + pending.bonusPct / 100)
+      if (pending.convertRatioPct) dmg = attacker.attack * (pending.convertRatioPct / 100)
+      if (pending.fixedBonus) dmg += attacker.attack * (pending.fixedBonus / 100)
+      dmg = dmg * (1 + pending.bonusPct / 100)
       if (hasStatus(target, '易伤100')) dmg += 100
-      if (hasStatus(attacker, '梦想')) dmg += 100 // 梦想每层 +100（2026-11-01 上调）
+      if (attacker.dreams) dmg += attacker.dreams * 100 // 梦想每层 +100
       // 夜晚于童年安眠：有追忆、且带现实适性的单位，伤害附加 100
       if (hasStatus(attacker, '追忆') && (attacker.traits ?? []).includes('现实')) dmg += 100
       // 天之苍苍：现实伤害 +200
@@ -1199,10 +1324,10 @@ function runAction(state, seatIndex, action, cards) {
       }
 
       // 打的是疗养院的父亲：攒一层蛰居（三星上限 3，否则 2）
-      if (target?.uid === 'father' && foe.summon) {
-        const cap = (target.starRank ?? 1) >= 3 ? 3 : 2
-        foe.summon.hideout = Math.min(cap, (foe.summon.hideout ?? 0) + 1)
-        log(state, `父亲受了这一下，蛰居 ${foe.summon.hideout} 层`)
+      if (target?.cardId === 'father') {
+        const cap = (foe.schulzStar ?? 1) >= 3 ? 3 : 2
+        target.hideout = Math.min(cap, (target.hideout ?? 0) + 1)
+        log(state, `父亲受了这一下，蛰居 ${target.hideout} 层`)
       }
       // 余华四星：这一击超过他的血量上限，让血量最高的队友代受（冷却两回合）
       if (
@@ -1295,14 +1420,21 @@ function runAction(state, seatIndex, action, cards) {
       if (seat.blocked?.skillUntil && state.round <= seat.blocked.skillUntil) {
         return { error: '要求多多的餐厅还压着：这回合不能用主动技' }
       }
-      // 对面的鳄鱼街：技能全被吞进账里，第三回合那一下直接作废
+      // 对面的鳄鱼街：技能被封存，下回合才生效；第三回合那一下直接作废
       if (foe.crocodile) {
         if (foe.crocodile.rounds <= 1) {
           log(state, '鳄鱼街的最后一回合：这次技能被无效化')
           return { ok: true }
         }
+        seat.delayedSkills = seat.delayedSkills ?? []
+        seat.delayedSkills.push({
+          actorId: action.actorId,
+          skillKey: action.skillKey,
+          allyTargetId: action.targetId,
+          enemyTargetId: action.enemyTargetId,
+        })
         foe.crocodile.bank += 500
-        log(state, `鳄鱼街吞掉了这次技能（账上 ${foe.crocodile.bank}）`)
+        log(state, `鳄鱼街把这次技能推到下一回合（排队 ${seat.delayedSkills.length}，账上 ${foe.crocodile.bank}）`)
         return { ok: true }
       }
       // 对面有活人偶就抵消一次（舒尔茨的裁缝的人偶）
@@ -1328,11 +1460,23 @@ function runAction(state, seatIndex, action, cards) {
       const pending = readPendingDamage(seat)
       let one = Math.round(100 * (1 + (pending.bonusPct ?? 0) / 100)) + (pending.flat ?? 0)
       if (hasStatus(actor, '攻-100')) one -= 100
-      if (hasStatus(actor, '梦想')) one += 100
+      if (actor.dreams) one += actor.dreams * 100
       one = Math.max(1, one)
       actor.empathy -= 1
       hurt(t, one, state, '活着')
       log(state, `${actor.name} 砍了 ${t.name} 一刀：${one} 点现实伤害（共情剩 ${actor.empathy}）`)
+      return { ok: true }
+    }
+
+    case 'exitButchery': {
+      // 主动退出畜生道：血量按原来的一半收回去
+      const t = seat.characters.find((c) => c.uid === action.targetId)
+      if (!t) return { error: '没找到这个角色' }
+      if (!hasStatus(t, '畜生道')) return { error: `${t.name} 不在畜生道里` }
+      t.statuses = t.statuses.filter((s) => s.name !== '畜生道')
+      t.maxHp = Math.max(1, Math.round(t.maxHp * 0.5))
+      t.hp = Math.min(t.hp, t.maxHp)
+      log(state, `${t.name} 自己从畜生道里走了出来（血量上限收到 ${t.maxHp}）`)
       return { ok: true }
     }
 
