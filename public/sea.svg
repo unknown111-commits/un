@@ -1,132 +1,182 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
   <defs>
-    <!-- 天空：黄昏偏晚，越往上越冷 -->
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#8ea7b3"/>
-      <stop offset="38%" stop-color="#b9cbd1"/>
-      <stop offset="52%" stop-color="#d9d4c8"/>
-      <stop offset="66%" stop-color="#f2dfc0"/>
-      <stop offset="70%" stop-color="#f6d9ae"/>
+      <stop offset="0%" stop-color="#7f9bab"/>
+      <stop offset="22%" stop-color="#9ab2bd"/>
+      <stop offset="44%" stop-color="#bccbc9"/>
+      <stop offset="58%" stop-color="#ded7c4"/>
+      <stop offset="66%" stop-color="#f3ddb6"/>
+      <stop offset="70%" stop-color="#f7d5a3"/>
     </linearGradient>
-    <!-- 海：从亮到沉 -->
     <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#c8d8dc"/>
-      <stop offset="30%" stop-color="#a9c0c8"/>
-      <stop offset="72%" stop-color="#8aa5b0"/>
-      <stop offset="100%" stop-color="#7b96a2"/>
+      <stop offset="0%" stop-color="#cfdde0"/>
+      <stop offset="18%" stop-color="#b6cad0"/>
+      <stop offset="52%" stop-color="#95b0ba"/>
+      <stop offset="100%" stop-color="#7d97a4"/>
     </linearGradient>
-    <!-- 沙滩 -->
     <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e8d8b8"/>
-      <stop offset="55%" stop-color="#dfcaa4"/>
-      <stop offset="100%" stop-color="#cdb187"/>
+      <stop offset="0%" stop-color="#ecdcbc"/>
+      <stop offset="40%" stop-color="#e2cda6"/>
+      <stop offset="100%" stop-color="#c8ab80"/>
     </linearGradient>
-    <!-- 夕阳 -->
     <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#fff6dd" stop-opacity="0.95"/>
-      <stop offset="45%" stop-color="#ffe9bb" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#ffe9bb" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#fff8e2" stop-opacity="0.92"/>
+      <stop offset="38%" stop-color="#ffeaba" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ffeaba" stop-opacity="0"/>
     </radialGradient>
     <radialGradient id="sun" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#fffaf0"/>
-      <stop offset="70%" stop-color="#fff2d2"/>
-      <stop offset="100%" stop-color="#ffe6b0"/>
+      <stop offset="0%" stop-color="#fffdf5"/>
+      <stop offset="62%" stop-color="#fff3d4"/>
+      <stop offset="100%" stop-color="#ffe2a8"/>
     </radialGradient>
-    <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
-    <filter id="softer"><feGaussianBlur stdDeviation="18"/></filter>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.55"/>
+      <stop offset="45%" stop-color="#dbe9e6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#a9c0c2" stop-opacity="0.5"/>
+    </linearGradient>
+    <filter id="b2"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="b6"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="b14"><feGaussianBlur stdDeviation="14"/></filter>
   </defs>
 
-  <!-- 天空 -->
   <rect width="1600" height="1000" fill="url(#sky)"/>
 
-  <!-- 云：几笔摊开的长条 -->
-  <g opacity="0.55" filter="url(#soft)">
-    <ellipse cx="330" cy="150" rx="300" ry="26" fill="#f6efe1"/>
-    <ellipse cx="560" cy="205" rx="240" ry="18" fill="#f2ead9"/>
-    <ellipse cx="1180" cy="120" rx="280" ry="20" fill="#f7f0e2"/>
-    <ellipse cx="980" cy="230" rx="200" ry="14" fill="#eee6d4"/>
+  <g fill="#fbf6ea" opacity="0.34" filter="url(#b6)">
+    <path d="M120 96 C 260 76, 420 88, 560 78 C 620 74, 660 84, 640 96 C 560 112, 380 116, 240 118 C 160 119, 110 108, 120 96 Z"/>
+    <path d="M900 62 C 1010 48, 1150 56, 1260 48 C 1330 43, 1360 54, 1330 64 C 1240 80, 1090 86, 980 86 C 920 86, 880 72, 900 62 Z"/>
   </g>
 
-  <!-- 太阳 -->
-  <circle cx="1230" cy="205" r="230" fill="url(#sunGlow)"/>
-  <circle cx="1230" cy="205" r="56" fill="url(#sun)" filter="url(#soft)"/>
+  <g fill="#fdf9f0" opacity="0.5" filter="url(#b6)">
+    <path d="M180 210 C 240 178, 330 176, 400 196 C 470 172, 560 178, 610 202 C 680 190, 740 204, 726 226 C 660 250, 520 254, 400 248 C 300 244, 200 240, 180 210 Z"/>
+    <path d="M1000 176 C 1060 150, 1140 152, 1200 172 C 1270 148, 1360 156, 1400 182 C 1430 200, 1380 214, 1300 218 C 1220 222, 1100 218, 1040 208 C 1000 202, 976 190, 1000 176 Z"/>
+  </g>
 
-  <!-- 远处的岛：一条极淡的轮廓 -->
-  <path d="M0 560 C 120 540, 210 552, 300 546 C 380 540, 430 552, 520 560 L 520 566 L 0 566 Z" fill="#9fb3ba" opacity="0.55"/>
-  <path d="M1020 566 C 1120 552, 1200 560, 1290 554 C 1400 548, 1500 560, 1600 566 L 1600 572 L 1020 572 Z" fill="#9db1b8" opacity="0.45"/>
+  <g fill="#f6efe0" opacity="0.4" filter="url(#b14)">
+    <ellipse cx="380" cy="296" rx="330" ry="16"/>
+    <ellipse cx="1180" cy="320" rx="300" ry="13"/>
+    <ellipse cx="760" cy="356" rx="260" ry="10"/>
+  </g>
 
-  <!-- 海 -->
+  <circle cx="1218" cy="222" r="300" fill="url(#sunGlow)"/>
+  <g stroke="#fff3d0" stroke-width="1.6" opacity="0.13" stroke-linecap="round">
+    <path d="M1218 222 L1102 158"/><path d="M1218 222 L1150 96"/>
+    <path d="M1218 222 L1316 104"/><path d="M1218 222 L1380 152"/>
+    <path d="M1218 222 L1348 274"/><path d="M1218 222 L1120 310"/>
+  </g>
+  <circle cx="1218" cy="222" r="54" fill="url(#sun)" filter="url(#b2)"/>
+
+  <g stroke="#5c6f78" fill="none" stroke-width="2.4" stroke-linecap="round" opacity="0.5">
+    <path d="M420 300 C 432 290, 444 292, 452 300 C 460 292, 472 290, 484 300"/>
+    <path d="M520 250 C 529 242, 538 244, 544 250 C 550 244, 559 242, 568 250"/>
+    <path d="M330 344 C 338 337, 346 339, 351 344 C 356 339, 364 337, 372 344"/>
+  </g>
+
+  <path d="M0 556 C 90 542, 170 548, 250 544 C 330 540, 400 550, 470 558 L 470 566 L 0 566 Z" fill="#a7bac0" opacity="0.5"/>
+  <path d="M1050 562 C 1140 550, 1220 556, 1300 552 C 1380 548, 1480 558, 1600 566 L 1600 572 L 1050 572 Z" fill="#a5b8bf" opacity="0.42"/>
+
   <rect y="566" width="1600" height="434" fill="url(#sea)"/>
 
-  <!-- 水面的暗带：远浅近深，让海有厚度 -->
-  <g fill="#7f9aa6" opacity="0.22">
-    <path d="M0 700 C 260 686, 520 716, 800 700 C 1080 684, 1340 714, 1600 698 L 1600 760 C 1340 776, 1080 746, 800 762 C 520 778, 260 748, 0 762 Z"/>
-  </g>
-  <g fill="#73909d" opacity="0.18">
-    <path d="M0 790 C 280 774, 560 804, 840 788 C 1120 772, 1380 802, 1600 786 L 1600 838 C 1380 854, 1120 824, 840 840 C 560 856, 280 826, 0 842 Z"/>
+  <g fill="#7f9aa6" opacity="0.2">
+    <path d="M0 690 C 260 676, 520 706, 800 690 C 1080 674, 1340 704, 1600 688 L 1600 752 C 1340 768, 1080 738, 800 754 C 520 770, 260 740, 0 754 Z"/>
+    <path d="M0 782 C 280 766, 560 796, 840 780 C 1120 764, 1380 794, 1600 778 L 1600 836 C 1380 852, 1120 822, 840 838 C 560 854, 280 824, 0 840 Z"/>
   </g>
 
-  <!-- 海平线上的亮边 -->
-  <rect y="564" width="1600" height="3" fill="#fff7e4" opacity="0.85"/>
-  <rect y="567" width="1600" height="26" fill="#fff7e4" opacity="0.16"/>
+  <rect y="564" width="1600" height="2.5" fill="#fffaf0" opacity="0.9"/>
+  <rect y="567" width="1600" height="24" fill="#fffaf0" opacity="0.14"/>
 
-  <!-- 太阳落海的倒影：碎成一片片，越往下越散 -->
-  <g fill="#fff6dd" opacity="0.75" filter="url(#soft)">
-    <rect x="1202" y="572" width="50" height="3"/>
-    <rect x="1180" y="590" width="94" height="3" opacity="0.85"/>
-    <rect x="1168" y="608" width="70" height="3" opacity="0.7" transform="translate(14 0)"/>
-    <rect x="1150" y="626" width="120" height="3" opacity="0.55"/>
-    <rect x="1176" y="646" width="78" height="3" opacity="0.45" transform="translate(-20 0)"/>
-    <rect x="1128" y="668" width="150" height="3" opacity="0.34"/>
-    <rect x="1156" y="694" width="96" height="3" opacity="0.24" transform="translate(28 0)"/>
-    <rect x="1100" y="722" width="180" height="3" opacity="0.15"/>
+  <g fill="#fff8e2" opacity="0.55" filter="url(#b6)">
+    <ellipse cx="1218" cy="580" rx="46" ry="3"/>
+    <ellipse cx="1210" cy="600" rx="70" ry="3.4"/>
+    <ellipse cx="1226" cy="624" rx="58" ry="3.6"/>
+    <ellipse cx="1206" cy="652" rx="86" ry="4"/>
+    <ellipse cx="1230" cy="684" rx="64" ry="4"/>
+    <ellipse cx="1200" cy="720" rx="96" ry="4.4"/>
+    <ellipse cx="1234" cy="758" rx="70" ry="4.6"/>
+  </g>
+  <g stroke="#fdfaf0" fill="none" stroke-linecap="round">
+    <g stroke-width="1.1" opacity="0.3">
+      <path d="M60 606 h52"/><path d="M150 600 h38"/><path d="M260 608 h44"/><path d="M360 602 h34"/>
+      <path d="M470 610 h48"/><path d="M590 604 h40"/><path d="M690 612 h36"/><path d="M800 606 h50"/>
+      <path d="M920 612 h42"/><path d="M1020 604 h38"/><path d="M1130 610 h46"/><path d="M1300 606 h40"/>
+      <path d="M1400 614 h44"/><path d="M1500 606 h36"/>
+    </g>
+    <g stroke-width="1.5" opacity="0.34">
+      <path d="M100 646 C 150 640, 200 652, 250 646"/><path d="M330 640 C 380 634, 430 646, 480 640"/>
+      <path d="M560 650 C 610 644, 660 656, 710 650"/><path d="M790 642 C 840 636, 890 648, 940 642"/>
+      <path d="M1010 652 C 1060 646, 1110 658, 1160 652"/><path d="M1240 644 C 1290 638, 1340 650, 1390 644"/>
+      <path d="M1460 654 C 1500 649, 1540 659, 1580 654"/>
+    </g>
+    <g stroke-width="2" opacity="0.36">
+      <path d="M40 700 C 110 692, 180 708, 250 700"/><path d="M300 712 C 380 704, 460 720, 540 712"/>
+      <path d="M600 698 C 680 690, 760 706, 840 698"/><path d="M900 714 C 980 706, 1060 722, 1140 714"/>
+      <path d="M1200 700 C 1280 692, 1360 708, 1440 700"/><path d="M1480 716 C 1520 712, 1560 720, 1590 716"/>
+    </g>
+    <g stroke-width="2.6" opacity="0.34">
+      <path d="M0 768 C 90 758, 180 778, 280 768"/><path d="M340 786 C 440 776, 540 796, 640 786"/>
+      <path d="M700 770 C 800 760, 900 780, 1000 770"/><path d="M1060 790 C 1160 780, 1260 800, 1360 790"/>
+      <path d="M1420 772 C 1480 766, 1540 780, 1600 772"/>
+    </g>
   </g>
 
-  <!-- 浪：一层比一层近，线条越往下越粗 -->
-  <g stroke="#fdf8ec" fill="none" stroke-linecap="round">
-    <path d="M0 620 C 180 610, 320 630, 500 620 C 700 608, 860 632, 1060 622 C 1260 612, 1420 632, 1600 622" stroke-width="1.6" opacity="0.35"/>
-    <path d="M0 664 C 200 652, 360 676, 560 664 C 780 650, 940 678, 1160 666 C 1340 656, 1480 676, 1600 668" stroke-width="2" opacity="0.3"/>
-    <path d="M0 716 C 220 702, 400 730, 640 716 C 880 700, 1060 732, 1320 718 C 1460 710, 1540 724, 1600 720" stroke-width="2.6" opacity="0.26"/>
-    <path d="M0 776 C 240 760, 460 792, 720 776 C 980 758, 1180 794, 1440 778 L 1600 780" stroke-width="3.2" opacity="0.22"/>
+  <path d="M0 846 C 260 824, 520 860, 800 844 C 1080 828, 1340 864, 1600 842 L 1600 1000 L 0 1000 Z" fill="url(#sand)"/>
+
+  <path d="M0 862 C 260 840, 520 876, 800 860 C 1080 844, 1340 880, 1600 858 L 1600 900 C 1340 922, 1080 886, 800 902 C 520 918, 260 882, 0 904 Z" fill="#c9ae86" opacity="0.42"/>
+
+  <path d="M0 846 C 260 824, 520 860, 800 844 C 1080 828, 1340 864, 1600 842 L 1600 856 C 1340 878, 1080 842, 800 858 C 520 874, 260 838, 0 860 Z" fill="#fffdf6" opacity="0.7"/>
+  <path d="M0 852 C 260 830, 520 866, 800 850 C 1080 834, 1340 870, 1600 848" stroke="#ffffff" stroke-width="1.6" fill="none" opacity="0.65"/>
+
+  <g stroke="#c2a67c" fill="none" opacity="0.26">
+    <path d="M0 886 C 240 872, 480 894, 760 882 C 1040 870, 1300 896, 1600 880" stroke-width="1.3"/>
+    <path d="M0 912 C 260 898, 520 922, 820 908 C 1120 894, 1380 920, 1600 906" stroke-width="1.5"/>
+    <path d="M0 942 C 280 930, 560 952, 880 938 C 1200 924, 1420 948, 1600 936" stroke-width="1.3"/>
+    <path d="M0 976 C 300 966, 620 986, 960 972 C 1240 960, 1460 980, 1600 970" stroke-width="1.1"/>
   </g>
 
-  <!-- 沙滩 -->
-  <path d="M0 848 C 260 826, 520 862, 800 846 C 1080 830, 1340 866, 1600 844 L 1600 1000 L 0 1000 Z" fill="url(#sand)"/>
-
-  <!-- 浪花：沙与海交界那条白边 -->
-  <path d="M0 848 C 260 826, 520 862, 800 846 C 1080 830, 1340 866, 1600 844 L 1600 860 C 1340 882, 1080 846, 800 862 C 520 878, 260 842, 0 864 Z" fill="#fffaf0" opacity="0.6"/>
-
-  <!-- 沙滩靠海那侧的湿沙 -->
-  <path d="M0 866 C 260 844, 520 880, 800 864 C 1080 848, 1340 884, 1600 862 L 1600 904 C 1340 926, 1080 890, 800 906 C 520 922, 260 886, 0 908 Z" fill="#c9ae86" opacity="0.45"/>
-
-  <!-- 沙滩上的细纹 -->
-  <g stroke="#c9ac82" fill="none" stroke-width="1.4" opacity="0.28">
-    <path d="M0 892 C 240 878, 480 900, 760 888 C 1040 876, 1300 902, 1600 886"/>
-    <path d="M0 926 C 260 912, 520 936, 820 922 C 1120 908, 1380 934, 1600 920"/>
-    <path d="M0 962 C 280 950, 560 972, 880 958 C 1200 944, 1420 968, 1600 956"/>
+  <g fill="#b08f63" opacity="0.3">
+    <circle cx="120" cy="890" r="1.6"/><circle cx="196" cy="918" r="1.2"/><circle cx="286" cy="950" r="1.8"/>
+    <circle cx="380" cy="902" r="1.3"/><circle cx="470" cy="934" r="1.6"/><circle cx="560" cy="968" r="1.2"/>
+    <circle cx="640" cy="910" r="1.7"/><circle cx="720" cy="944" r="1.3"/><circle cx="820" cy="900" r="1.5"/>
+    <circle cx="900" cy="936" r="1.8"/><circle cx="980" cy="964" r="1.2"/><circle cx="1080" cy="908" r="1.4"/>
+    <circle cx="1160" cy="942" r="1.7"/><circle cx="1260" cy="906" r="1.3"/><circle cx="1340" cy="952" r="1.6"/>
+    <circle cx="1440" cy="916" r="1.2"/><circle cx="1520" cy="948" r="1.5"/>
   </g>
 
-  <!-- 沙粒 -->
-  <g fill="#b8996e" opacity="0.35">
-    <circle cx="180" cy="900" r="2"/><circle cx="420" cy="930" r="1.6"/>
-    <circle cx="680" cy="912" r="1.8"/><circle cx="940" cy="948" r="2"/>
-    <circle cx="1180" cy="905" r="1.5"/><circle cx="1420" cy="936" r="1.9"/>
+  <g transform="translate(880 918) rotate(14)">
+    <path d="M0 0 C 8 -8, 22 -9, 28 0 C 22 7, 8 7, 0 0 Z" fill="#f2e6cd" stroke="#cdb894" stroke-width="1"/>
+    <path d="M6 -1 L20 4 M10 -3 L24 2" stroke="#d8c6a4" stroke-width="0.8"/>
+  </g>
+  <g transform="translate(520 962) rotate(-8)">
+    <path d="M0 0 C 6 -6, 16 -7, 21 0 C 16 5, 6 5, 0 0 Z" fill="#efe2c6" stroke="#cdb894" stroke-width="0.9"/>
   </g>
 
-  <!-- 一封搁浅的信：右下角，纸已被水泡软 -->
-  <g transform="translate(1230 780) rotate(-7)">
-    <rect x="0" y="0" width="150" height="96" fill="#f7f1e2" opacity="0.9" rx="1"/>
-    <path d="M0 0 L75 46 L150 0" fill="none" stroke="#c8b696" stroke-width="1.4" opacity="0.8"/>
-    <path d="M0 96 L58 42" fill="none" stroke="#cdbb9b" stroke-width="1" opacity="0.6"/>
-    <path d="M150 96 L92 42" fill="none" stroke="#cdbb9b" stroke-width="1" opacity="0.6"/>
-    <rect x="14" y="66" width="86" height="2" fill="#c2b393" opacity="0.55"/>
-    <rect x="14" y="76" width="62" height="2" fill="#c2b393" opacity="0.45"/>
+  <g transform="translate(1226 776) rotate(-7)">
+    <path d="M0 2 L150 0 L152 96 L2 98 Z" fill="#f8f2e3" opacity="0.94"/>
+    <path d="M0 2 L150 0" stroke="#d2c1a0" stroke-width="1"/>
+    <path d="M0 2 L76 47 L152 0" fill="none" stroke="#cbb999" stroke-width="1.5" opacity="0.85"/>
+    <path d="M0 98 L58 44" fill="none" stroke="#d3c2a2" stroke-width="1" opacity="0.7"/>
+    <path d="M152 96 L94 44" fill="none" stroke="#d3c2a2" stroke-width="1" opacity="0.7"/>
+    <rect x="14" y="66" width="92" height="1.6" fill="#c6b795" opacity="0.6"/>
+    <rect x="14" y="74" width="70" height="1.6" fill="#c6b795" opacity="0.48"/>
+    <rect x="14" y="82" width="52" height="1.6" fill="#c6b795" opacity="0.36"/>
+    <rect x="112" y="52" width="24" height="28" fill="#f4ecda" stroke="#c9b795" stroke-width="0.9"/>
+    <circle cx="124" cy="66" r="7" fill="none" stroke="#a98f6c" stroke-width="0.9" opacity="0.8"/>
   </g>
 
-  <!-- 前景：一只搁在沙上的玻璃瓶，里面有个卷起来的纸卷 -->
-  <g transform="translate(300 838)">
-    <path d="M12 44 C 12 22, 26 14, 34 14 L 34 6 C 34 2, 40 2, 40 6 L 40 14 C 48 14, 62 22, 62 44 C 62 66, 50 78, 37 78 C 24 78, 12 66, 12 44 Z" fill="#dfe9e6" opacity="0.55" stroke="#a9c0c2" stroke-width="1.4"/>
-    <rect x="26" y="30" width="22" height="30" rx="3" fill="#f4ecd9" opacity="0.85"/>
-    <path d="M30 38 L44 56" stroke="#cbb894" stroke-width="1.2" opacity="0.7"/>
+  <g transform="translate(292 826)">
+    <path d="M10 46 C 10 22, 25 13, 34 13 L 34 5 C 34 1, 41 1, 41 5 L 41 13 C 50 13, 65 22, 65 46 C 65 70, 52 82, 38 82 C 24 82, 10 70, 10 46 Z" fill="url(#glass)" stroke="#9cb8bb" stroke-width="1.5"/>
+    <path d="M34 5 L41 5 L41 13 L34 13 Z" fill="#c9a97c" opacity="0.85"/>
+    <rect x="26" y="34" width="23" height="30" rx="3" fill="#f7f0dd" opacity="0.9"/>
+    <path d="M30 42 L44 60" stroke="#cbb894" stroke-width="1.1" opacity="0.75"/>
+    <path d="M18 44 C 20 34, 28 26, 38 24" stroke="#ffffff" stroke-width="1.6" fill="none" opacity="0.55"/>
+    <ellipse cx="38" cy="86" rx="30" ry="5" fill="#b99b6f" opacity="0.22"/>
+  </g>
+
+  <g stroke="#b7a074" stroke-width="1.6" fill="none" opacity="0.55" stroke-linecap="round">
+    <path d="M120 1000 C 128 966, 140 940, 158 918"/>
+    <path d="M132 1000 C 138 972, 148 952, 162 936"/>
+    <path d="M142 1000 C 146 978, 152 962, 160 950"/>
+    <path d="M1470 1000 C 1478 970, 1490 944, 1508 922"/>
+    <path d="M1482 1000 C 1488 976, 1498 956, 1514 940"/>
+    <path d="M1494 1000 C 1498 982, 1504 968, 1512 958"/>
   </g>
 </svg>
