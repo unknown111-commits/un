@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- 天空：黄昏偏晚，越往上越冷 -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8ea7b3"/>
+      <stop offset="38%" stop-color="#b9cbd1"/>
+      <stop offset="62%" stop-color="#e2dccc"/>
+      <stop offset="74%" stop-color="#f0e2c6"/>
+    </linearGradient>
+    <!-- 海：从亮到沉 -->
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c8d8dc"/>
+      <stop offset="30%" stop-color="#a9c0c8"/>
+      <stop offset="72%" stop-color="#8aa5b0"/>
+      <stop offset="100%" stop-color="#7b96a2"/>
+    </linearGradient>
+    <!-- 沙滩 -->
+    <linearGradient id="sand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8d8b8"/>
+      <stop offset="55%" stop-color="#dfcaa4"/>
+      <stop offset="100%" stop-color="#cdb187"/>
+    </linearGradient>
+    <!-- 夕阳 -->
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff6dd" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#ffe9bb" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#ffe9bb" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="70%" stop-color="#fff2d2"/>
+      <stop offset="100%" stop-color="#ffe6b0"/>
+    </radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="softer"><feGaussianBlur stdDeviation="18"/></filter>
+  </defs>
+
+  <!-- 天空 -->
+  <rect width="1600" height="1000" fill="url(#sky)"/>
+
+  <!-- 云：几笔摊开的长条 -->
+  <g opacity="0.55" filter="url(#soft)">
+    <ellipse cx="330" cy="150" rx="300" ry="26" fill="#f6efe1"/>
+    <ellipse cx="560" cy="205" rx="240" ry="18" fill="#f2ead9"/>
+    <ellipse cx="1180" cy="120" rx="280" ry="20" fill="#f7f0e2"/>
+    <ellipse cx="980" cy="230" rx="200" ry="14" fill="#eee6d4"/>
+  </g>
+
+  <!-- 太阳 -->
+  <circle cx="1230" cy="205" r="230" fill="url(#sunGlow)"/>
+  <circle cx="1230" cy="205" r="56" fill="url(#sun)" filter="url(#soft)"/>
+
+  <!-- 远处的岛：一条极淡的轮廓 -->
+  <path d="M0 560 C 120 540, 210 552, 300 546 C 380 540, 430 552, 520 560 L 520 566 L 0 566 Z" fill="#9fb3ba" opacity="0.55"/>
+  <path d="M1020 566 C 1120 552, 1200 560, 1290 554 C 1400 548, 1500 560, 1600 566 L 1600 572 L 1020 572 Z" fill="#9db1b8" opacity="0.45"/>
+
+  <!-- 海 -->
+  <rect y="566" width="1600" height="434" fill="url(#sea)"/>
+
+  <!-- 海平线上的亮边 -->
+  <rect y="564" width="1600" height="3" fill="#fff7e4" opacity="0.85"/>
+  <rect y="567" width="1600" height="26" fill="#fff7e4" opacity="0.16"/>
+
+  <!-- 太阳落海的倒影：一道竖直的光带，断成一片片 -->
+  <g fill="#fff6dd">
+    <rect x="1206" y="572" width="48" height="5" opacity="0.85"/>
+    <rect x="1198" y="592" width="64" height="4" opacity="0.7"/>
+    <rect x="1190" y="614" width="80" height="4" opacity="0.55"/>
+    <rect x="1182" y="640" width="96" height="4" opacity="0.42"/>
+    <rect x="1174" y="670" width="112" height="4" opacity="0.3"/>
+    <rect x="1166" y="704" width="128" height="4" opacity="0.2"/>
+  </g>
+
+  <!-- 浪：一层比一层近，线条越往下越粗 -->
+  <g stroke="#fdf8ec" fill="none" stroke-linecap="round">
+    <path d="M0 620 C 180 610, 320 630, 500 620 C 700 608, 860 632, 1060 622 C 1260 612, 1420 632, 1600 622" stroke-width="1.6" opacity="0.35"/>
+    <path d="M0 664 C 200 652, 360 676, 560 664 C 780 650, 940 678, 1160 666 C 1340 656, 1480 676, 1600 668" stroke-width="2" opacity="0.3"/>
+    <path d="M0 716 C 220 702, 400 730, 640 716 C 880 700, 1060 732, 1320 718 C 1460 710, 1540 724, 1600 720" stroke-width="2.6" opacity="0.26"/>
+    <path d="M0 776 C 240 760, 460 792, 720 776 C 980 758, 1180 794, 1440 778 L 1600 780" stroke-width="3.2" opacity="0.22"/>
+  </g>
+
+  <!-- 沙滩 -->
+  <path d="M0 848 C 260 826, 520 862, 800 846 C 1080 830, 1340 866, 1600 844 L 1600 1000 L 0 1000 Z" fill="url(#sand)"/>
+
+  <!-- 浪花：沙与海交界那条白边 -->
+  <path d="M0 848 C 260 826, 520 862, 800 846 C 1080 830, 1340 866, 1600 844 L 1600 860 C 1340 882, 1080 846, 800 862 C 520 878, 260 842, 0 864 Z" fill="#fffaf0" opacity="0.6"/>
+
+  <!-- 沙滩上的细纹 -->
+  <g stroke="#c9ac82" fill="none" stroke-width="1.4" opacity="0.28">
+    <path d="M0 892 C 240 878, 480 900, 760 888 C 1040 876, 1300 902, 1600 886"/>
+    <path d="M0 926 C 260 912, 520 936, 820 922 C 1120 908, 1380 934, 1600 920"/>
+    <path d="M0 962 C 280 950, 560 972, 880 958 C 1200 944, 1420 968, 1600 956"/>
+  </g>
+
+  <!-- 沙粒 -->
+  <g fill="#b8996e" opacity="0.35">
+    <circle cx="180" cy="900" r="2"/><circle cx="420" cy="930" r="1.6"/>
+    <circle cx="680" cy="912" r="1.8"/><circle cx="940" cy="948" r="2"/>
+    <circle cx="1180" cy="905" r="1.5"/><circle cx="1420" cy="936" r="1.9"/>
+  </g>
+
+  <!-- 一封搁浅的信：右下角，纸已被水泡软 -->
+  <g transform="translate(1230 780) rotate(-7)">
+    <rect x="0" y="0" width="150" height="96" fill="#f7f1e2" opacity="0.9" rx="1"/>
+    <path d="M0 0 L75 46 L150 0" fill="none" stroke="#c8b696" stroke-width="1.4" opacity="0.8"/>
+    <path d="M0 96 L58 42" fill="none" stroke="#cdbb9b" stroke-width="1" opacity="0.6"/>
+    <path d="M150 96 L92 42" fill="none" stroke="#cdbb9b" stroke-width="1" opacity="0.6"/>
+    <rect x="14" y="66" width="86" height="2" fill="#c2b393" opacity="0.55"/>
+    <rect x="14" y="76" width="62" height="2" fill="#c2b393" opacity="0.45"/>
+  </g>
+
+  <!-- 前景：一只搁在沙上的玻璃瓶，里面有个卷起来的纸卷 -->
+  <g transform="translate(300 838)">
+    <path d="M12 44 C 12 22, 26 14, 34 14 L 34 6 C 34 2, 40 2, 40 6 L 40 14 C 48 14, 62 22, 62 44 C 62 66, 50 78, 37 78 C 24 78, 12 66, 12 44 Z" fill="#dfe9e6" opacity="0.55" stroke="#a9c0c2" stroke-width="1.4"/>
+    <rect x="26" y="30" width="22" height="30" rx="3" fill="#f4ecd9" opacity="0.85"/>
+    <path d="M30 38 L44 56" stroke="#cbb894" stroke-width="1.2" opacity="0.7"/>
+  </g>
+</svg>
