@@ -772,9 +772,15 @@ function applyHandEffects(state, seat, foe, card, drop) {
         addPendingDamage(seat, { damageType: eff.damageType, bonusPct: eff.bonusPct })
         log(state, `${seat.name} 攒下一层加成：${eff.damageType} +${eff.bonusPct}%`)
         break
-      case 'nextDamageConvert':
-        addPendingDamage(seat, { damageType: eff.damageType, convertRatioPct: eff.ratioPct })
+      case 'nextDamageConvert': {
+        // 拖到谁身上，这一击的转化就归谁那一边（面包可以喂给对面）
+        const owner = drop && foe.characters.includes(drop) ? foe : seat
+        owner.pendingDamage = owner.pendingDamage ?? { parts: [] }
+        if (!Array.isArray(owner.pendingDamage.parts)) owner.pendingDamage = { parts: [] }
+        owner.pendingDamage.parts.push({ damageType: eff.damageType, convertRatioPct: eff.ratioPct })
+        log(state, `${owner.name} 的下一击转成${eff.damageType}，按攻击力的 ${eff.ratioPct}% 算`)
         break
+      }
       case 'extraTurn':
         // 额外回合：只有 1 点行动值、不回血不抽牌；结束之后回到原来那一步
         if (!seat.inExtra) {
