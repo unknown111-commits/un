@@ -4,8 +4,9 @@
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#8ea7b3"/>
       <stop offset="38%" stop-color="#b9cbd1"/>
-      <stop offset="62%" stop-color="#e2dccc"/>
-      <stop offset="74%" stop-color="#f0e2c6"/>
+      <stop offset="52%" stop-color="#d9d4c8"/>
+      <stop offset="66%" stop-color="#f2dfc0"/>
+      <stop offset="70%" stop-color="#f6d9ae"/>
     </linearGradient>
     <!-- 海：从亮到沉 -->
     <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
@@ -57,18 +58,28 @@
   <!-- 海 -->
   <rect y="566" width="1600" height="434" fill="url(#sea)"/>
 
+  <!-- 水面的暗带：远浅近深，让海有厚度 -->
+  <g fill="#7f9aa6" opacity="0.22">
+    <path d="M0 700 C 260 686, 520 716, 800 700 C 1080 684, 1340 714, 1600 698 L 1600 760 C 1340 776, 1080 746, 800 762 C 520 778, 260 748, 0 762 Z"/>
+  </g>
+  <g fill="#73909d" opacity="0.18">
+    <path d="M0 790 C 280 774, 560 804, 840 788 C 1120 772, 1380 802, 1600 786 L 1600 838 C 1380 854, 1120 824, 840 840 C 560 856, 280 826, 0 842 Z"/>
+  </g>
+
   <!-- 海平线上的亮边 -->
   <rect y="564" width="1600" height="3" fill="#fff7e4" opacity="0.85"/>
   <rect y="567" width="1600" height="26" fill="#fff7e4" opacity="0.16"/>
 
-  <!-- 太阳落海的倒影：一道竖直的光带，断成一片片 -->
-  <g fill="#fff6dd">
-    <rect x="1206" y="572" width="48" height="5" opacity="0.85"/>
-    <rect x="1198" y="592" width="64" height="4" opacity="0.7"/>
-    <rect x="1190" y="614" width="80" height="4" opacity="0.55"/>
-    <rect x="1182" y="640" width="96" height="4" opacity="0.42"/>
-    <rect x="1174" y="670" width="112" height="4" opacity="0.3"/>
-    <rect x="1166" y="704" width="128" height="4" opacity="0.2"/>
+  <!-- 太阳落海的倒影：碎成一片片，越往下越散 -->
+  <g fill="#fff6dd" opacity="0.75" filter="url(#soft)">
+    <rect x="1202" y="572" width="50" height="3"/>
+    <rect x="1180" y="590" width="94" height="3" opacity="0.85"/>
+    <rect x="1168" y="608" width="70" height="3" opacity="0.7" transform="translate(14 0)"/>
+    <rect x="1150" y="626" width="120" height="3" opacity="0.55"/>
+    <rect x="1176" y="646" width="78" height="3" opacity="0.45" transform="translate(-20 0)"/>
+    <rect x="1128" y="668" width="150" height="3" opacity="0.34"/>
+    <rect x="1156" y="694" width="96" height="3" opacity="0.24" transform="translate(28 0)"/>
+    <rect x="1100" y="722" width="180" height="3" opacity="0.15"/>
   </g>
 
   <!-- 浪：一层比一层近，线条越往下越粗 -->
@@ -84,6 +95,9 @@
 
   <!-- 浪花：沙与海交界那条白边 -->
   <path d="M0 848 C 260 826, 520 862, 800 846 C 1080 830, 1340 866, 1600 844 L 1600 860 C 1340 882, 1080 846, 800 862 C 520 878, 260 842, 0 864 Z" fill="#fffaf0" opacity="0.6"/>
+
+  <!-- 沙滩靠海那侧的湿沙 -->
+  <path d="M0 866 C 260 844, 520 880, 800 864 C 1080 848, 1340 884, 1600 862 L 1600 904 C 1340 926, 1080 890, 800 906 C 520 922, 260 886, 0 908 Z" fill="#c9ae86" opacity="0.45"/>
 
   <!-- 沙滩上的细纹 -->
   <g stroke="#c9ac82" fill="none" stroke-width="1.4" opacity="0.28">
