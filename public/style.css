@@ -869,3 +869,36 @@ body::after {
   box-shadow: 0 18px 50px rgba(36, 51, 58, 0.12);
   backdrop-filter: blur(3px);
 }
+
+/* ── 真正的一张海景：SVG 插画铺满整屏 ── */
+body {
+  background-color: #b9cbd1;
+  background-image: url('/sea.svg');
+  background-size: cover;
+  background-position: center 55%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+/* 之前那些渐变铺层让位给画 */
+body::before,
+body::after {
+  display: none;
+}
+
+/* 牌桌半透明，让海透上来 */
+.table {
+  background: rgba(247, 244, 236, 0.72);
+  backdrop-filter: blur(2px) saturate(0.9);
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  border-right: 1px solid rgba(255, 255, 255, 0.35);
+}
+.topbar {
+  background: rgba(247, 244, 236, 0.82);
+  backdrop-filter: blur(3px);
+}
+
+/* 大厅那张信纸再薄一点，露出后面的海 */
+.lobby {
+  background: rgba(250, 247, 240, 0.8);
+  backdrop-filter: blur(4px);
+}
