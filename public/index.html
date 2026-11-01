@@ -105,7 +105,7 @@
   // 装成 app：注册 service worker，外壳缓存起来，断网也能打开
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {})
+      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((r) => { try { r.update() } catch {} }).catch(() => {})
     })
   }
 </script>
